@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: #050711;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at top left, rgba(247, 216, 138, 0.11), transparent 34rem),
+    radial-gradient(circle at 82% 0%, rgba(94, 241, 182, 0.08), transparent 30rem),
+    linear-gradient(135deg, #050711 0%, #080a13 44%, #111827 100%);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(5, 7, 17, 0.72);
+  border-radius: 999px;
+  background: rgba(247, 216, 138, 0.34);
+}
+
+@layer components {
+  .glass-panel {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.035)),
+      rgba(9, 13, 25, 0.76);
+    box-shadow: 0 22px 80px rgba(0, 0, 0, 0.34);
+    backdrop-filter: blur(22px);
+  }
+
+  .gold-text {
+    background: linear-gradient(135deg, #fff8d8 0%, #f7d88a 38%, #c99a32 78%, #fff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .focus-ring {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+
+  .focus-ring:focus-visible {
+    outline-color: rgba(247, 216, 138, 0.82);
+  }
+
+  .luxury-border {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .luxury-border::before {
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(140deg, rgba(247, 216, 138, 0.68), rgba(110, 198, 255, 0.14), rgba(94, 241, 182, 0.22));
+    content: '';
+    pointer-events: none;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .page-shell {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .page-shell {
+      padding: 1.75rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .page-shell {
+      padding: 2rem;
+    }
+  }
+}
