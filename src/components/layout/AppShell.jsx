@@ -3,12 +3,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Bell, Command, Search, Sparkles } from 'lucide-react';
 import { mobileNavigation, navigation, user } from '../../data/mockData';
+import AppLogo from '../ui/AppLogo';
 import NotificationCenter from './NotificationCenter';
 
 function BrandMark() {
   return (
     <div className="flex items-center gap-3">
-      <div className="grid size-11 place-items-center rounded-[8px] bg-gold-line text-lg font-black text-night shadow-gold">R</div>
+      <AppLogo className="size-11" />
       <div>
         <p className="text-base font-black text-white">RiseOS AI</p>
         <p className="text-[11px] uppercase tracking-[0.2em] text-champagne/75">Life Operating System</p>
@@ -57,6 +58,9 @@ function TopBar({ onOpenNotifications }) {
       <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
         <div className="lg:hidden">
           <BrandMark />
+        </div>
+        <div className="hidden shrink-0 lg:flex">
+          <AppLogo className="size-11" />
         </div>
         <div className="hidden min-w-0 flex-1 items-center gap-3 rounded-[8px] border border-white/10 bg-white/[0.045] px-3 py-2 text-steel lg:flex">
           <Search size={17} />

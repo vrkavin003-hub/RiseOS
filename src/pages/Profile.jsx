@@ -1,5 +1,6 @@
 import { CalendarDays, MapPin, ShieldCheck, UserRound } from 'lucide-react';
 import GlassCard from '../components/ui/GlassCard';
+import AppLogo from '../components/ui/AppLogo';
 import ProgressBar from '../components/ui/ProgressBar';
 import SectionHeader from '../components/ui/SectionHeader';
 import StatPill from '../components/ui/StatPill';
@@ -17,7 +18,7 @@ export default function Profile() {
       <section className="grid gap-4 xl:grid-cols-[0.78fr_1.22fr]">
         <GlassCard className="p-5">
           <div className="flex flex-col items-center text-center">
-            <div className="grid size-24 place-items-center rounded-[8px] bg-gold-line text-4xl font-black text-night shadow-gold">{user.avatar}</div>
+            <AppLogo className="size-24" imageClassName="p-2" />
             <h2 className="mt-5 text-2xl font-black text-white">{user.name}</h2>
             <p className="mt-1 text-sm font-semibold text-champagne">{user.level}</p>
             <p className="mt-3 max-w-sm text-sm leading-6 text-steel">{user.focus}</p>

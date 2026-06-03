@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { authBenefits, onboardingScreens } from '../../data/mockData';
+import AppLogo from '../ui/AppLogo';
 
 export default function AuthLayout({ title, subtitle, children, footer }) {
   return (
@@ -15,7 +16,7 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
           className="relative mx-auto w-full max-w-md"
         >
           <Link to="/" className="mb-8 inline-flex items-center gap-3">
-            <div className="grid size-11 place-items-center rounded-[8px] bg-gold-line text-lg font-black text-night shadow-gold">R</div>
+            <AppLogo className="size-11" />
             <div>
               <p className="text-base font-black text-white">RiseOS AI</p>
               <p className="text-[11px] uppercase tracking-[0.2em] text-champagne/75">Life Operating System</p>

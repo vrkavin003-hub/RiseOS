@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AppShell from './components/layout/AppShell';
+import AppLogo from './components/ui/AppLogo';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const AICoach = lazy(() => import('./pages/AICoach'));
@@ -21,7 +22,13 @@ function RouteLoader() {
   return (
     <div className="page-shell">
       <div className="glass-panel rounded-[8px] p-5">
-        <div className="h-7 w-56 animate-pulse rounded-full bg-white/8" />
+        <div className="flex items-center gap-3">
+          <AppLogo className="size-12" />
+          <div>
+            <div className="h-4 w-28 animate-pulse rounded-full bg-white/8" />
+            <div className="mt-2 h-3 w-44 animate-pulse rounded-full bg-white/7" />
+          </div>
+        </div>
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           <div className="h-28 animate-pulse rounded-[8px] bg-white/7" />
           <div className="h-28 animate-pulse rounded-[8px] bg-white/7" />
