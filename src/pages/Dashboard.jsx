@@ -22,6 +22,8 @@ import PremiumButton from '../components/ui/PremiumButton';
 import ProgressBar from '../components/ui/ProgressBar';
 import SectionHeader from '../components/ui/SectionHeader';
 import StatPill from '../components/ui/StatPill';
+import { useAuth } from '../context/AuthContext';
+import { useDashboardSummary } from '../hooks/useDashboardSummary';
 import {
   completionStats,
   dashboardWidgets,
@@ -37,6 +39,64 @@ const tooltipStyle = {
   background: 'rgba(8,10,19,0.95)',
   color: '#fff',
 };
+
+function asScore(value, fallback) {
+  if (value === null || value === undefined) return fallback;
+  const nextValue = Number(value);
+  return Number.isFinite(nextValue) ? Math.max(0, Math.min(100, Math.round(nextValue))) : fallback;
+}
+
+function buildScoreCards(dashboard, isLoading) {
+  const values = {
+    'Discipline Score': dashboard?.disciplineScore,
+    'Growth Score': dashboard?.growthScore,
+    'Health Score': dashboard?.healthScore,
+    'Productivity Score': dashboard?.productivityScore,
+    'Skill Score': dashboard?.skillScore,
+    'Wealth Score': dashboard?.wealthScore,
+  };
+
+  return scoreCards.map((card) => ({
+    ...card,
+    delta: dashboard ? 'Live' : isLoading ? 'Syncing' : card.delta,
+    value: asScore(values[card.label], card.value),
+  }));
+}
+
+function buildCompletionStats(dashboard) {
+  if (!dashboard) return completionStats;
+
+  const values = {
+    'Goal Completion': dashboard.goalsCompleted * 10,
+    'Habit Completion': dashboard.habitCompletion,
+    'Income Growth': dashboard.wealthScore,
+    'Knowledge Growth': dashboard.skillScore,
+  };
+
+  return completionStats.map((stat) => ({
+    ...stat,
+    value: asScore(values[stat.label], stat.value),
+  }));
+}
+
+function buildRecommendations(dashboard, focus) {
+  if (!dashboard) return [];
+
+  const pillars = [
+    { label: 'discipline', value: asScore(dashboard.disciplineScore, 0) },
+    { label: 'wealth', value: asScore(dashboard.wealthScore, 0) },
+    { label: 'skill', value: asScore(dashboard.skillScore, 0) },
+    { label: 'health', value: asScore(dashboard.healthScore, 0) },
+    { label: 'productivity', value: asScore(dashboard.productivityScore, 0) },
+  ].sort((first, second) => first.value - second.value);
+
+  const weakest = pillars[0];
+  return [
+    `Primary focus: ${focus}. Keep today's work tied to that operating theme.`,
+    `Lowest live pillar: ${weakest.label} at ${weakest.value}. Pick one small action there before the day closes.`,
+    `${Number(dashboard.journalEntries || 0)} reviews and ${Math.round(Number(dashboard.learningHours || 0))} learning hours are currently feeding your score mix.`,
+  ];
+}
 
 function CompletionGauge({ stat, index }) {
   const Icon = stat.icon;
@@ -64,7 +124,21 @@ function CompletionGauge({ stat, index }) {
 }
 
 export default function Dashboard() {
+  const { user: accountUser } = useAuth();
+  const { dashboard, error: dashboardError, isLoading } = useDashboardSummary();
   const MissionIcon = dashboardWidgets.mission.icon;
+  const displayName = accountUser?.name || user.name;
+  const focus = accountUser?.goals?.[0] || user.focus || 'AI Builder';
+  const syncedScoreCards = buildScoreCards(dashboard, isLoading);
+  const syncedCompletionStats = buildCompletionStats(dashboard);
+  const recommendations = buildRecommendations(dashboard, focus);
+  const habitStreak = dashboard ? Number(dashboard.habitStreak || 0) : user.streak;
+  const missionStatus = dashboard
+    ? `${Number(dashboard.goalsCompleted || 0)} goals complete | ${Number(dashboard.journalEntries || 0)} reviews logged`
+    : dashboardWidgets.mission.status;
+  const missionBody = dashboard
+    ? `Live sync: ${Math.round(Number(dashboard.learningHours || 0))} learning hours, ${habitStreak} best habit streak, and ${Number(dashboard.incomeTracked || 0).toLocaleString()} income tracked across your operating system.`
+    : dashboardWidgets.mission.body;
 
   return (
     <div className="page-shell space-y-6">
@@ -76,7 +150,7 @@ export default function Dashboard() {
                 <Crown size={14} /> Executive Command
               </p>
               <h1 className="mt-5 max-w-3xl text-4xl font-black leading-tight text-white sm:text-5xl">
-                Good Morning, <span className="gold-text">{user.name}</span>
+                Good Morning, <span className="gold-text">{displayName}</span>
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-steel">
                 AI motivation: your future is built through calm repetition. Today, protect one deep work block, make one higher-quality decision,
@@ -84,13 +158,13 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[360px]">
-              <StatPill label="Streak" value={`${user.streak} days`} icon={Sparkles} />
-              <StatPill label="Level" value={user.level} icon={Crown} tone="text-mint" />
-              <StatPill label="Focus" value="AI Builder" icon={ArrowUpRight} tone="text-azure" />
+              <StatPill label="Streak" value={`${habitStreak} days`} icon={Sparkles} />
+              <StatPill label="Level" value={accountUser?.profession || user.level} icon={Crown} tone="text-mint" />
+              <StatPill label="Focus" value={focus} icon={ArrowUpRight} tone="text-azure" />
             </div>
           </div>
           <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {scoreCards.map((card, index) => (
+            {syncedScoreCards.map((card, index) => (
               <MetricCard key={card.label} {...card} delay={index * 0.035} />
             ))}
           </div>
@@ -101,11 +175,11 @@ export default function Dashboard() {
               <MissionIcon size={22} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-champagne">{dashboardWidgets.mission.status}</p>
+              <p className="text-sm font-semibold text-champagne">{missionStatus}</p>
               <h2 className="text-xl font-bold text-white">{dashboardWidgets.mission.title}</h2>
             </div>
           </div>
-          <p className="mt-4 text-sm leading-6 text-steel">{dashboardWidgets.mission.body}</p>
+          <p className="mt-4 text-sm leading-6 text-steel">{missionBody}</p>
           <div className="mt-5 space-y-3">
             {dashboardWidgets.focus.map((task) => (
               <div key={task} className="flex items-center gap-3 rounded-[8px] border border-white/10 bg-white/[0.045] p-3">
@@ -121,7 +195,7 @@ export default function Dashboard() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-4">
-        {completionStats.map((stat, index) => (
+        {syncedCompletionStats.map((stat, index) => (
           <CompletionGauge key={stat.label} stat={stat} index={index} />
         ))}
       </section>
@@ -191,7 +265,23 @@ export default function Dashboard() {
         </GlassCard>
         <GlassCard className="p-5">
           <SectionHeader eyebrow="System" title="AI recommendation cards" description="Next best actions generated from your current score mix." />
-          <LoadingSkeleton rows={2} />
+          {isLoading && <LoadingSkeleton rows={2} />}
+          {!isLoading && dashboardError && (
+            <div className="rounded-[8px] border border-ember/25 bg-ember/10 p-4">
+              <p className="text-sm font-bold text-ember">Live dashboard unavailable</p>
+              <p className="mt-2 text-sm leading-6 text-steel">{dashboardError}. Showing local defaults until the API syncs again.</p>
+            </div>
+          )}
+          {!isLoading && !dashboardError && (
+            <div className="grid gap-3">
+              {recommendations.map((recommendation) => (
+                <div key={recommendation} className="flex items-start gap-3 rounded-[8px] border border-white/10 bg-white/[0.045] p-3">
+                  <CheckCircle2 className="mt-0.5 text-mint" size={18} />
+                  <p className="text-sm leading-6 text-white">{recommendation}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </GlassCard>
       </section>
 

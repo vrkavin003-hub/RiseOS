@@ -8,6 +8,23 @@ export default [
   },
   js.configs.recommended,
   {
+    files: ['server/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        Buffer: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+      },
+    },
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
     files: ['src/**/*.{js,jsx}', '*.config.js'],
     languageOptions: {
       ecmaVersion: 'latest',

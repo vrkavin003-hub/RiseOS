@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Bell, Command, Search, Sparkles } from 'lucide-react';
-import { mobileNavigation, navigation, user } from '../../data/mockData';
+import { Bell, Command, LogOut, Search, Sparkles } from 'lucide-react';
+import { mobileNavigation, navigation, user as mockUser } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 import AppLogo from '../ui/AppLogo';
 import NotificationCenter from './NotificationCenter';
 
@@ -52,7 +53,14 @@ function Sidebar() {
   );
 }
 
-function TopBar({ onOpenNotifications }) {
+function getAvatarLetter(name = '') {
+  return name.trim().charAt(0).toUpperCase() || 'R';
+}
+
+function TopBar({ accountUser, logoutDisabled, onLogout, onOpenNotifications }) {
+  const displayName = accountUser?.name || mockUser.name;
+  const displayRole = accountUser?.profession || mockUser.level;
+
   return (
     <header className="sticky top-0 z-30 border-b border-white/8 bg-night/72 px-4 py-3 backdrop-blur-2xl lg:ml-72">
       <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
@@ -80,12 +88,27 @@ function TopBar({ onOpenNotifications }) {
             <span className="absolute right-2 top-2 size-2 rounded-full bg-ember" />
           </button>
           <div className="hidden items-center gap-3 rounded-[8px] border border-white/10 bg-white/7 px-3 py-2 sm:flex">
-            <div className="grid size-9 place-items-center rounded-[8px] bg-gold-line text-sm font-black text-night">{user.avatar}</div>
+            <div className="grid size-9 place-items-center overflow-hidden rounded-[8px] bg-gold-line text-sm font-black text-night">
+              {accountUser?.profilePhoto ? (
+                <img alt="" className="size-full object-cover" src={accountUser.profilePhoto} />
+              ) : (
+                getAvatarLetter(displayName)
+              )}
+            </div>
             <div>
-              <p className="text-sm font-bold text-white">{user.name}</p>
-              <p className="text-xs text-steel">{user.level}</p>
+              <p className="text-sm font-bold text-white">{displayName}</p>
+              <p className="text-xs text-steel">{displayRole}</p>
             </div>
           </div>
+          <button
+            aria-label="Log out"
+            className="focus-ring grid size-11 place-items-center rounded-[8px] border border-white/10 bg-white/7 text-steel transition hover:border-champagne/35 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={logoutDisabled}
+            onClick={onLogout}
+            type="button"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
       </div>
     </header>
@@ -117,13 +140,29 @@ function BottomNavigation() {
 }
 
 export default function AppShell() {
+  const { logout, user } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [logoutDisabled, setLogoutDisabled] = useState(false);
   const location = useLocation();
+
+  async function handleLogout() {
+    setLogoutDisabled(true);
+    try {
+      await logout();
+    } catch {
+      setLogoutDisabled(false);
+    }
+  }
 
   return (
     <div className="min-h-screen">
       <Sidebar />
-      <TopBar onOpenNotifications={() => setNotificationsOpen(true)} />
+      <TopBar
+        accountUser={user}
+        logoutDisabled={logoutDisabled}
+        onLogout={handleLogout}
+        onOpenNotifications={() => setNotificationsOpen(true)}
+      />
       <NotificationCenter open={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
       <main className="pb-24 lg:ml-72 lg:pb-0">
         <AnimatePresence mode="wait">

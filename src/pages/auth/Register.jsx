@@ -1,9 +1,50 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Github, Mail, Sparkles } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import PremiumButton from '../../components/ui/PremiumButton';
+import { useAuth } from '../../context/AuthContext';
+import { getApiErrorMessage } from '../../lib/api';
+
+const ambitions = [
+  'Build an AI product business',
+  'Grow career and income',
+  'Improve discipline and health',
+  'Master valuable skills',
+];
 
 export default function Register() {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    email: '',
+    name: '',
+    password: '',
+    primaryAmbition: ambitions[0],
+  });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      await register(form);
+      navigate('/', { replace: true });
+    } catch (submitError) {
+      setError(getApiErrorMessage(submitError));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <AuthLayout
       title="Create your command center"
@@ -18,37 +59,74 @@ export default function Register() {
       }
     >
       <div className="grid grid-cols-2 gap-3">
-        <PremiumButton variant="ghost" icon={Github}>
+        <PremiumButton variant="ghost" icon={Github} type="button" disabled>
           GitHub
         </PremiumButton>
-        <PremiumButton variant="ghost" icon={Mail}>
+        <PremiumButton variant="ghost" icon={Mail} type="button" disabled>
           Google
         </PremiumButton>
       </div>
-      <form className="mt-5 space-y-4">
+      <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
+        {error && (
+          <div className="rounded-[8px] border border-ember/30 bg-ember/10 px-4 py-3 text-sm font-semibold text-ember" role="alert">
+            {error}
+          </div>
+        )}
         <label className="block">
           <span className="text-xs font-semibold text-steel">Full name</span>
-          <input className="focus-ring mt-2 w-full rounded-[8px] border border-white/10 bg-white/[0.06] px-4 py-3 text-white placeholder:text-steel" placeholder="Kavin" />
+          <input
+            autoComplete="name"
+            className="focus-ring mt-2 w-full rounded-[8px] border border-white/10 bg-white/[0.06] px-4 py-3 text-white placeholder:text-steel"
+            minLength={2}
+            name="name"
+            onChange={handleChange}
+            placeholder="Kavin"
+            required
+            value={form.name}
+          />
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-steel">Primary ambition</span>
-          <select className="focus-ring mt-2 w-full rounded-[8px] border border-white/10 bg-ink px-4 py-3 text-white">
-            <option>Build an AI product business</option>
-            <option>Grow career and income</option>
-            <option>Improve discipline and health</option>
-            <option>Master valuable skills</option>
+          <select
+            className="focus-ring mt-2 w-full rounded-[8px] border border-white/10 bg-ink px-4 py-3 text-white"
+            name="primaryAmbition"
+            onChange={handleChange}
+            value={form.primaryAmbition}
+          >
+            {ambitions.map((ambition) => (
+              <option key={ambition}>{ambition}</option>
+            ))}
           </select>
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-steel">Email</span>
-          <input className="focus-ring mt-2 w-full rounded-[8px] border border-white/10 bg-white/[0.06] px-4 py-3 text-white placeholder:text-steel" placeholder="kavin@riseos.ai" />
+          <input
+            autoComplete="email"
+            className="focus-ring mt-2 w-full rounded-[8px] border border-white/10 bg-white/[0.06] px-4 py-3 text-white placeholder:text-steel"
+            name="email"
+            onChange={handleChange}
+            placeholder="kavin@riseos.ai"
+            required
+            type="email"
+            value={form.email}
+          />
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-steel">Password</span>
-          <input type="password" className="focus-ring mt-2 w-full rounded-[8px] border border-white/10 bg-white/[0.06] px-4 py-3 text-white placeholder:text-steel" placeholder="Create a strong password" />
+          <input
+            autoComplete="new-password"
+            className="focus-ring mt-2 w-full rounded-[8px] border border-white/10 bg-white/[0.06] px-4 py-3 text-white placeholder:text-steel"
+            minLength={8}
+            name="password"
+            onChange={handleChange}
+            placeholder="Create a strong password"
+            required
+            type="password"
+            value={form.password}
+          />
         </label>
-        <PremiumButton className="w-full" icon={Sparkles} type="button">
-          Start onboarding
+        <PremiumButton className="w-full" disabled={isSubmitting} icon={Sparkles} type="submit">
+          {isSubmitting ? 'Creating account...' : 'Start onboarding'}
         </PremiumButton>
       </form>
     </AuthLayout>
