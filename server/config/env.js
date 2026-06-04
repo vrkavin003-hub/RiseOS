@@ -3,7 +3,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const nodeEnv = process.env.NODE_ENV || 'development';
-const clientUrls = (process.env.CLIENT_URL || 'http://127.0.0.1:5173')
+const vercelClientUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '';
+const defaultClientUrl = nodeEnv === 'production' ? '' : 'http://127.0.0.1:5173';
+const clientUrls = (process.env.CLIENT_URL || vercelClientUrl || defaultClientUrl)
   .split(',')
   .map((url) => url.trim())
   .filter(Boolean);
@@ -20,7 +22,7 @@ if (nodeEnv === 'production') {
     throw new Error('MONGO_URI is required in production.');
   }
 
-  if (!process.env.CLIENT_URL) {
+  if (clientUrls.length === 0) {
     throw new Error('CLIENT_URL is required in production.');
   }
 }

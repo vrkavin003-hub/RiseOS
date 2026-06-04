@@ -1,6 +1,17 @@
 import axios from 'axios';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://127.0.0.1:5000/api');
+function getApiBaseUrl() {
+  const configuredUrl = import.meta.env.VITE_API_URL?.trim();
+  const pointsToLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?/i.test(configuredUrl || '');
+
+  if (import.meta.env.PROD && (!configuredUrl || pointsToLocalhost)) {
+    return '/api';
+  }
+
+  return configuredUrl || 'http://127.0.0.1:5000/api';
+}
+
+export const API_BASE_URL = getApiBaseUrl();
 
 const ACCESS_TOKEN_KEY = 'riseos_access_token';
 
@@ -117,6 +128,10 @@ export function getApiErrorMessage(error) {
   const fieldErrors = error.response?.data?.errors;
   if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
     return fieldErrors.map((fieldError) => fieldError.message).filter(Boolean).join(' ');
+  }
+
+  if (!error.response && error.code === 'ERR_NETWORK') {
+    return 'RiseOS API is unreachable. Check the deployed /api/health endpoint and production environment variables.';
   }
 
   return error.response?.data?.message || error.message || 'Something went wrong';

@@ -99,6 +99,14 @@ docker build --build-arg VITE_API_URL=https://api.example.com/api -t riseos-ai .
 
 Set the secret environment variables in Render before deploying. Do not commit real `.env` values.
 
-## Vercel Frontend-Only
+## Vercel
 
-`vercel.json` is configured for the static Vite client. Use this only when the API is deployed elsewhere, and set `VITE_API_URL` in Vercel to that API origin plus `/api`.
+`vercel.json` routes `/api/*` to the Express serverless entry at `api/index.js` and routes all other paths to the Vite SPA. Set these Vercel environment variables before deploying:
+
+- `MONGO_URI`
+- `JWT_SECRET`
+- `JWT_REFRESH_SECRET`
+- `CLIENT_URL` if you want to allow a custom domain in addition to the automatic Vercel URL
+- Optional integration keys listed above
+
+Leave `VITE_API_URL` unset for the same-origin Vercel deployment. The client will call `/api`. Do not set Vercel's `VITE_API_URL` to `localhost` or `127.0.0.1`; those addresses point to the visitor's machine, not the deployed API.
