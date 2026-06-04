@@ -39,8 +39,20 @@ if (env.isProduction && !hasClientBuild) {
   console.warn('Production client build was not found. Run npm run build before starting the server.');
 }
 
+function normalizeOrigin(origin) {
+  if (!origin) return '';
+
+  try {
+    return new URL(origin).origin;
+  } catch {
+    return '';
+  }
+}
+
 const corsOrigin = (origin, callback) => {
-  if (!origin || env.clientUrls.includes(origin)) {
+  const normalizedOrigin = normalizeOrigin(origin);
+
+  if (!origin || env.clientUrls.includes(normalizedOrigin)) {
     callback(null, true);
     return;
   }
@@ -93,6 +105,7 @@ app.use(
 app.get('/api/health', (req, res) => {
   res.json({
     configuration: {
+      allowedOrigins: env.clientUrls,
       issues: env.productionConfigIssues,
       ok: env.productionConfigIssues.length === 0,
     },

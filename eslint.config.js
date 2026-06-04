@@ -18,6 +18,7 @@ export default [
         process: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        URL: 'readonly',
       },
     },
     rules: {
