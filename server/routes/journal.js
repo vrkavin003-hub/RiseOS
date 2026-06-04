@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import Journal from '../models/Journal.js';
-import Notification from '../models/Notification.js';
 import { requireAuth } from '../middleware/auth.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { analyzeJournal } from '../services/aiService.js';
 import { calculateDashboard } from '../services/dashboardService.js';
+import { createNotification } from '../services/notificationService.js';
 import { emitToUser } from '../services/realtime.js';
 import { cleanObject } from '../utils/sanitize.js';
 
@@ -26,7 +26,7 @@ router.post(
     entry.aiAnalysis = await analyzeJournal(entry);
     await entry.save();
 
-    await Notification.create({
+    await createNotification({
       body: 'Your journal analysis is ready.',
       title: 'Journal analyzed',
       type: 'journal',
@@ -34,7 +34,6 @@ router.post(
     });
 
     emitToUser(req.user._id, 'dashboard:update', await calculateDashboard(req.user._id));
-    emitToUser(req.user._id, 'notification:new', { title: 'Journal analyzed' });
     res.status(201).json({ item: entry });
   }),
 );

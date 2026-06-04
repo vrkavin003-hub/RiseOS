@@ -10,19 +10,31 @@ import { hashToken, randomToken, signAccessToken, signRefreshToken } from '../ut
 import { sendMail } from '../services/mailer.js';
 
 const router = Router();
+const MAX_REFRESH_TOKENS = 10;
 
-function refreshCookieOptions(rememberMe = false) {
+function refreshCookieBaseOptions() {
   return {
     httpOnly: true,
-    maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000,
     sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
     secure: env.nodeEnv === 'production',
   };
 }
 
+function refreshCookieOptions(rememberMe = false) {
+  return {
+    ...refreshCookieBaseOptions(),
+    maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000,
+  };
+}
+
+function clearRefreshCookie(res) {
+  res.clearCookie('riseos_refresh', refreshCookieBaseOptions());
+}
+
 async function issueSession(res, user, rememberMe = false) {
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user, rememberMe);
+  user.refreshTokens = user.refreshTokens.filter((token) => token.expiresAt > new Date()).slice(-(MAX_REFRESH_TOKENS - 1));
   user.refreshTokens.push({
     expiresAt: new Date(Date.now() + (rememberMe ? 30 : 7) * 24 * 60 * 60 * 1000),
     tokenHash: hashToken(refreshToken),
@@ -85,17 +97,25 @@ router.post(
     const refreshToken = req.cookies.riseos_refresh || req.body.refreshToken;
     if (!refreshToken) return res.status(401).json({ message: 'Refresh token required' });
 
-    const payload = jwt.verify(refreshToken, env.jwtRefreshSecret);
+    let payload;
+    try {
+      payload = jwt.verify(refreshToken, env.jwtRefreshSecret);
+    } catch {
+      clearRefreshCookie(res);
+      return res.status(401).json({ message: 'Invalid refresh token' });
+    }
+
     const tokenHash = hashToken(refreshToken);
     const user = await User.findById(payload.id).select('+password');
     const storedToken = user?.refreshTokens.find((token) => token.tokenHash === tokenHash && token.expiresAt > new Date());
 
     if (!user || !storedToken) {
+      clearRefreshCookie(res);
       return res.status(401).json({ message: 'Invalid refresh token' });
     }
 
     user.refreshTokens = user.refreshTokens.filter((token) => token.tokenHash !== tokenHash);
-    res.json(await issueSession(res, user, true));
+    res.json(await issueSession(res, user, Boolean(payload.rememberMe)));
   }),
 );
 
@@ -163,7 +183,7 @@ router.post(
     if (refreshToken) {
       await User.findByIdAndUpdate(req.user._id, { $pull: { refreshTokens: { tokenHash: hashToken(refreshToken) } } });
     }
-    res.clearCookie('riseos_refresh');
+    clearRefreshCookie(res);
     res.json({ message: 'Logged out' });
   }),
 );
@@ -173,7 +193,7 @@ router.post(
   requireAuth,
   asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, { refreshTokens: [] });
-    res.clearCookie('riseos_refresh');
+    clearRefreshCookie(res);
     res.json({ message: 'Logged out everywhere' });
   }),
 );

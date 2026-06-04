@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://127.0.0.1:5000/api');
 
 const ACCESS_TOKEN_KEY = 'riseos_access_token';
 
@@ -154,6 +154,35 @@ export const authApi = {
   refresh: refreshAccessToken,
 };
 
+export const userApi = {
+  async changeEmail(payload) {
+    const response = await api.patch('/users/me/email', payload);
+    return response.data;
+  },
+  async changePassword(payload) {
+    const response = await api.patch('/users/me/password', payload);
+    return response.data;
+  },
+  async getMe() {
+    const response = await api.get('/users/me');
+    return response.data.user;
+  },
+  async updateMe(payload) {
+    const response = await api.patch('/users/me', payload);
+    return response.data.user;
+  },
+  async uploadPhoto(file) {
+    const formData = new window.FormData();
+    formData.append('photo', file);
+    const response = await api.post('/users/me/photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.user;
+  },
+};
+
 export const dashboardApi = {
   async getSummary() {
     const response = await api.get('/dashboard');
@@ -169,5 +198,215 @@ export const journalApi = {
   async list() {
     const response = await api.get('/journal');
     return response.data.items || [];
+  },
+};
+
+export const habitsApi = {
+  async complete(id, payload = {}) {
+    const response = await api.post(`/habits/${id}/complete`, payload);
+    return response.data.item;
+  },
+  async create(payload) {
+    const response = await api.post('/habits', payload);
+    return response.data.item;
+  },
+  async list() {
+    const response = await api.get('/habits');
+    return response.data;
+  },
+  async remove(id) {
+    const response = await api.delete(`/habits/${id}`);
+    return response.data;
+  },
+  async removeCompletion(id, completionId) {
+    const response = await api.delete(`/habits/${id}/completions/${completionId}`);
+    return response.data.item;
+  },
+  async update(id, payload) {
+    const response = await api.patch(`/habits/${id}`, payload);
+    return response.data.item;
+  },
+};
+
+export const goalsApi = {
+  async create(payload) {
+    const response = await api.post('/goals', payload);
+    return response.data.item;
+  },
+  async list() {
+    const response = await api.get('/goals');
+    return response.data.items || [];
+  },
+  async remove(id) {
+    const response = await api.delete(`/goals/${id}`);
+    return response.data;
+  },
+  async update(id, payload) {
+    const response = await api.patch(`/goals/${id}`, payload);
+    return response.data.item;
+  },
+};
+
+export const skillsApi = {
+  async create(payload) {
+    const response = await api.post('/skills', payload);
+    return response.data.item;
+  },
+  async list() {
+    const response = await api.get('/skills');
+    return response.data.items || [];
+  },
+  async remove(id) {
+    const response = await api.delete(`/skills/${id}`);
+    return response.data;
+  },
+  async update(id, payload) {
+    const response = await api.patch(`/skills/${id}`, payload);
+    return response.data.item;
+  },
+};
+
+export const wealthApi = {
+  async createExpense(payload) {
+    const response = await api.post('/wealth/expenses', payload);
+    return response.data.item;
+  },
+  async createIncome(payload) {
+    const response = await api.post('/wealth/income', payload);
+    return response.data.item;
+  },
+  async getSummary() {
+    const response = await api.get('/wealth/summary');
+    return response.data;
+  },
+  async removeExpense(id) {
+    const response = await api.delete(`/wealth/expenses/${id}`);
+    return response.data;
+  },
+  async removeIncome(id) {
+    const response = await api.delete(`/wealth/income/${id}`);
+    return response.data;
+  },
+};
+
+export const aiApi = {
+  async listChats() {
+    const response = await api.get('/ai');
+    return response.data.items || [];
+  },
+  async sendMessage(payload) {
+    const response = await api.post('/ai/chat', payload);
+    return response.data;
+  },
+};
+
+export const newsApi = {
+  async list() {
+    const response = await api.get('/news');
+    return response.data.items || [];
+  },
+  async refresh() {
+    const response = await api.post('/news/refresh');
+    return response.data.items || [];
+  },
+  async save(id) {
+    const response = await api.post(`/news/${id}/save`);
+    return response.data.item;
+  },
+};
+
+export const notificationsApi = {
+  async list() {
+    const response = await api.get('/notifications');
+    return response.data;
+  },
+  async markAllRead() {
+    const response = await api.patch('/notifications/read-all');
+    return response.data;
+  },
+  async markRead(id) {
+    const response = await api.patch(`/notifications/${id}/read`);
+    return response.data;
+  },
+  async refresh() {
+    const response = await api.post('/notifications/refresh');
+    return response.data;
+  },
+  async remove(id) {
+    const response = await api.delete(`/notifications/${id}`);
+    return response.data;
+  },
+};
+
+export const friendsApi = {
+  async list() {
+    const response = await api.get('/friends');
+    return response.data;
+  },
+  async remove(id) {
+    const response = await api.delete(`/friends/${id}`);
+    return response.data;
+  },
+  async request(userId) {
+    const response = await api.post(`/friends/request/${userId}`);
+    return response.data.item;
+  },
+  async respond(id, status) {
+    const response = await api.patch(`/friends/${id}`, { status });
+    return response.data.item;
+  },
+  async search(q) {
+    const response = await api.get('/friends/search', { params: { q } });
+    return response.data.items || [];
+  },
+};
+
+export const statusApi = {
+  async create(payload) {
+    const response = await api.post('/status', payload);
+    return response.data.item;
+  },
+  async list() {
+    const response = await api.get('/status');
+    return response.data.items || [];
+  },
+  async remove(id) {
+    const response = await api.delete(`/status/${id}`);
+    return response.data;
+  },
+  async view(id) {
+    const response = await api.post(`/status/${id}/view`);
+    return response.data.item;
+  },
+};
+
+export const adminApi = {
+  async deleteNews(id) {
+    const response = await api.delete(`/admin/content/news/${id}`);
+    return response.data;
+  },
+  async getContent() {
+    const response = await api.get('/admin/content');
+    return response.data.content;
+  },
+  async getHealth() {
+    const response = await api.get('/admin/health');
+    return response.data.health;
+  },
+  async getOverview() {
+    const response = await api.get('/admin/overview');
+    return response.data.overview;
+  },
+  async getReports() {
+    const response = await api.get('/admin/reports');
+    return response.data.reports;
+  },
+  async listUsers(params = {}) {
+    const response = await api.get('/admin/users', { params });
+    return response.data;
+  },
+  async updateUser(id, payload) {
+    const response = await api.patch(`/admin/users/${id}`, payload);
+    return response.data.user;
   },
 };

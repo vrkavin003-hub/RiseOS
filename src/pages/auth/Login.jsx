@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Github, Mail } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import PremiumButton from '../../components/ui/PremiumButton';
+import StatusBanner from '../../components/ui/StatusBanner';
 import { useAuth } from '../../context/AuthContext';
 import { getApiErrorMessage } from '../../lib/api';
 
@@ -65,11 +66,7 @@ export default function Login() {
         <span className="h-px flex-1 bg-white/10" />
       </div>
       <form className="space-y-4" onSubmit={handleSubmit}>
-        {error && (
-          <div className="rounded-[8px] border border-ember/30 bg-ember/10 px-4 py-3 text-sm font-semibold text-ember" role="alert">
-            {error}
-          </div>
-        )}
+        <StatusBanner>{error}</StatusBanner>
         <label className="block">
           <span className="text-xs font-semibold text-steel">Email</span>
           <input

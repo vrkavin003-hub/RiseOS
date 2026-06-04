@@ -4,6 +4,8 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Bell, Command, LogOut, Search, Sparkles } from 'lucide-react';
 import { mobileNavigation, navigation, user as mockUser } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
+import { useRealtime } from '../../context/RealtimeContext';
+import { useNotifications } from '../../hooks/useNotifications';
 import AppLogo from '../ui/AppLogo';
 import NotificationCenter from './NotificationCenter';
 
@@ -19,12 +21,14 @@ function BrandMark() {
   );
 }
 
-function Sidebar() {
+function Sidebar({ accountUser }) {
+  const visibleNavigation = navigation.filter((item) => !item.adminOnly || accountUser?.role === 'admin');
+
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-white/10 bg-night/78 p-4 backdrop-blur-2xl lg:block">
       <BrandMark />
       <nav className="mt-8 space-y-1">
-        {navigation.map((item) => (
+        {visibleNavigation.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
@@ -57,7 +61,7 @@ function getAvatarLetter(name = '') {
   return name.trim().charAt(0).toUpperCase() || 'R';
 }
 
-function TopBar({ accountUser, logoutDisabled, onLogout, onOpenNotifications }) {
+function TopBar({ accountUser, logoutDisabled, onLogout, onOpenNotifications, realtimeStatus, unreadCount }) {
   const displayName = accountUser?.name || mockUser.name;
   const displayRole = accountUser?.profession || mockUser.level;
 
@@ -79,13 +83,24 @@ function TopBar({ accountUser, logoutDisabled, onLogout, onOpenNotifications }) 
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <div
+            className="hidden items-center gap-2 rounded-[8px] border border-white/10 bg-white/7 px-3 py-2 text-xs font-bold text-steel md:flex"
+            title={`Realtime ${realtimeStatus}`}
+          >
+            <span className={`size-2 rounded-full ${realtimeStatus === 'connected' ? 'bg-mint' : realtimeStatus === 'connecting' ? 'bg-champagne' : 'bg-ember'}`} />
+            {realtimeStatus === 'connected' ? 'Live' : 'Sync'}
+          </div>
           <button
             className="focus-ring relative grid size-11 place-items-center rounded-[8px] border border-white/10 bg-white/7 text-steel transition hover:border-champagne/35 hover:text-white"
             onClick={onOpenNotifications}
             aria-label="Open notifications"
           >
             <Bell size={19} />
-            <span className="absolute right-2 top-2 size-2 rounded-full bg-ember" />
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-ember px-1.5 text-[10px] font-black text-white">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </button>
           <div className="hidden items-center gap-3 rounded-[8px] border border-white/10 bg-white/7 px-3 py-2 sm:flex">
             <div className="grid size-9 place-items-center overflow-hidden rounded-[8px] bg-gold-line text-sm font-black text-night">
@@ -141,6 +156,19 @@ function BottomNavigation() {
 
 export default function AppShell() {
   const { logout, user } = useAuth();
+  const { status: realtimeStatus } = useRealtime();
+  const {
+    deleteNotification,
+    error: notificationError,
+    isLoading: notificationsLoading,
+    isRefreshing: notificationsRefreshing,
+    markAllRead,
+    markRead,
+    mutatingId: notificationMutatingId,
+    notifications,
+    refreshNotifications,
+    unreadCount,
+  } = useNotifications();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [logoutDisabled, setLogoutDisabled] = useState(false);
   const location = useLocation();
@@ -154,16 +182,36 @@ export default function AppShell() {
     }
   }
 
+  function handleOpenNotifications() {
+    setNotificationsOpen(true);
+    refreshNotifications().catch(() => {});
+  }
+
   return (
     <div className="min-h-screen">
-      <Sidebar />
+      <Sidebar accountUser={user} />
       <TopBar
         accountUser={user}
         logoutDisabled={logoutDisabled}
         onLogout={handleLogout}
-        onOpenNotifications={() => setNotificationsOpen(true)}
+        onOpenNotifications={handleOpenNotifications}
+        realtimeStatus={realtimeStatus}
+        unreadCount={unreadCount}
       />
-      <NotificationCenter open={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
+      <NotificationCenter
+        error={notificationError}
+        isLoading={notificationsLoading}
+        isRefreshing={notificationsRefreshing}
+        mutatingId={notificationMutatingId}
+        notifications={notifications}
+        onClose={() => setNotificationsOpen(false)}
+        onDelete={(id) => deleteNotification(id).catch(() => {})}
+        onMarkAllRead={() => markAllRead().catch(() => {})}
+        onMarkRead={(id) => markRead(id).catch(() => {})}
+        onRefresh={() => refreshNotifications().catch(() => {})}
+        open={notificationsOpen}
+        unreadCount={unreadCount}
+      />
       <main className="pb-24 lg:ml-72 lg:pb-0">
         <AnimatePresence mode="wait">
           <motion.div

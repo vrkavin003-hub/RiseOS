@@ -13,4 +13,7 @@ const businessIdeaSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+businessIdeaSchema.index({ user: 1, createdAt: -1 });
+businessIdeaSchema.index({ user: 1, updatedAt: -1 });
+
 export default mongoose.model('BusinessIdea', businessIdeaSchema);

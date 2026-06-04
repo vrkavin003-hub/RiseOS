@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, MailCheck } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import PremiumButton from '../../components/ui/PremiumButton';
+import StatusBanner from '../../components/ui/StatusBanner';
 import { authApi, getApiErrorMessage } from '../../lib/api';
 
 export default function ForgotPassword() {
@@ -39,16 +40,8 @@ export default function ForgotPassword() {
       }
     >
       <form className="space-y-4" onSubmit={handleSubmit}>
-        {error && (
-          <div className="rounded-[8px] border border-ember/30 bg-ember/10 px-4 py-3 text-sm font-semibold text-ember" role="alert">
-            {error}
-          </div>
-        )}
-        {message && (
-          <div className="rounded-[8px] border border-mint/30 bg-mint/10 px-4 py-3 text-sm font-semibold text-mint" role="status">
-            {message}
-          </div>
-        )}
+        <StatusBanner>{error}</StatusBanner>
+        <StatusBanner tone="success">{message}</StatusBanner>
         <label className="block">
           <span className="text-xs font-semibold text-steel">Account email</span>
           <input

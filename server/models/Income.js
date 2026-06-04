@@ -11,4 +11,7 @@ const incomeSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+incomeSchema.index({ user: 1, date: -1 });
+incomeSchema.index({ user: 1, source: 1, date: -1 });
+
 export default mongoose.model('Income', incomeSchema);

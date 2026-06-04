@@ -31,6 +31,7 @@ import {
   TrendingUp,
   Trophy,
   UserRound,
+  Users,
   WalletCards,
   Zap,
 } from 'lucide-react';
@@ -49,6 +50,8 @@ export const navigation = [
   { label: 'Dashboard', path: '/', icon: BarChart3 },
   { label: 'AI Coach', path: '/coach', icon: MessageSquareText },
   { label: 'Journal', path: '/journal', icon: BookOpen },
+  { label: 'Habits', path: '/habits', icon: CalendarCheck },
+  { label: 'Social', path: '/social', icon: Users },
   { label: 'News', path: '/news', icon: Newspaper },
   { label: 'Skills', path: '/skills', icon: GraduationCap },
   { label: 'Business Lab', path: '/business-lab', icon: Lightbulb },
@@ -57,6 +60,7 @@ export const navigation = [
   { label: 'Analytics', path: '/analytics', icon: LineChart },
   { label: 'Profile', path: '/profile', icon: UserRound },
   { label: 'Settings', path: '/settings', icon: Settings },
+  { adminOnly: true, label: 'Admin', path: '/admin', icon: ShieldCheck },
 ];
 
 export const mobileNavigation = navigation.slice(0, 5);

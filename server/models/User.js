@@ -67,4 +67,9 @@ userSchema.methods.toSafeJSON = function toSafeJSON() {
   return user;
 };
 
+userSchema.index({ emailVerificationToken: 1 });
+userSchema.index({ name: 'text', email: 'text', profession: 'text' });
+userSchema.index({ passwordResetToken: 1, passwordResetExpires: 1 });
+userSchema.index({ role: 1, createdAt: -1 });
+
 export default mongoose.model('User', userSchema);

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { authApi, clearAccessToken, getAccessToken, setAccessToken } from '../lib/api';
+import { authApi, clearAccessToken, getAccessToken, setAccessToken, userApi } from '../lib/api';
 
 const AuthContext = createContext(null);
 
@@ -63,6 +63,16 @@ export function AuthProvider({ children }) {
     [applySession],
   );
 
+  const updateUser = useCallback((nextUser) => {
+    setSession((current) => ({ ...current, user: nextUser }));
+    return nextUser;
+  }, []);
+
+  const reloadUser = useCallback(async () => {
+    const user = await userApi.getMe();
+    return updateUser(user);
+  }, [updateUser]);
+
   const refreshSession = useCallback(async () => {
     const nextSession = await authApi.refresh();
     return applySession(nextSession);
@@ -78,6 +88,14 @@ export function AuthProvider({ children }) {
     }
   }, [clearSession]);
 
+  const logoutEverywhere = useCallback(async () => {
+    try {
+      await authApi.logoutEverywhere();
+    } finally {
+      clearSession();
+    }
+  }, [clearSession]);
+
   const value = useMemo(
     () => ({
       clearSession,
@@ -85,12 +103,15 @@ export function AuthProvider({ children }) {
       isLoading: session.status === 'checking',
       login,
       logout,
+      logoutEverywhere,
+      reloadUser,
       refreshSession,
       register,
       status: session.status,
+      updateUser,
       user: session.user,
     }),
-    [clearSession, login, logout, refreshSession, register, session.status, session.user],
+    [clearSession, login, logout, logoutEverywhere, refreshSession, register, reloadUser, session.status, session.user, updateUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

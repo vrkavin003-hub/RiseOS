@@ -2,6 +2,7 @@ import { Router } from 'express';
 import News from '../models/News.js';
 import { requireAuth } from '../middleware/auth.js';
 import asyncHandler from '../utils/asyncHandler.js';
+import { createNotification } from '../services/notificationService.js';
 import { refreshNews } from '../services/newsService.js';
 
 const router = Router();
@@ -11,7 +12,16 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
 }));
 
 router.post('/refresh', requireAuth, asyncHandler(async (req, res) => {
-  res.json({ items: await refreshNews() });
+  const items = await refreshNews();
+  if (req.user.notificationSettings?.news !== false) {
+    await createNotification({
+      body: items.length ? `${items.length} intelligence briefings are available.` : 'News refresh completed. Add NEWS_API_KEY for live articles.',
+      title: 'News refresh complete',
+      type: 'news',
+      user: req.user._id,
+    });
+  }
+  res.json({ items });
 }));
 
 router.post('/:id/save', requireAuth, asyncHandler(async (req, res) => {

@@ -7,6 +7,7 @@ export async function connectDB() {
     return null;
   }
 
+  mongoose.set('autoIndex', env.nodeEnv !== 'production');
   mongoose.set('strictQuery', true);
   const connection = await mongoose.connect(env.mongoUri);
   console.log(`MongoDB connected: ${connection.connection.host}`);

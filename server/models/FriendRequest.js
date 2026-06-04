@@ -10,5 +10,7 @@ const friendRequestSchema = new mongoose.Schema(
 );
 
 friendRequestSchema.index({ from: 1, to: 1 }, { unique: true });
+friendRequestSchema.index({ to: 1, status: 1, updatedAt: -1 });
+friendRequestSchema.index({ from: 1, status: 1, updatedAt: -1 });
 
 export default mongoose.model('FriendRequest', friendRequestSchema);

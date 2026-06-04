@@ -25,4 +25,7 @@ const journalSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+journalSchema.index({ user: 1, createdAt: -1 });
+journalSchema.index({ user: 1, mood: 1, createdAt: -1 });
+
 export default mongoose.model('Journal', journalSchema);

@@ -7,7 +7,7 @@ export function signAccessToken(user) {
 }
 
 export function signRefreshToken(user, rememberMe = false) {
-  return jwt.sign({ id: user._id.toString(), role: user.role }, env.jwtRefreshSecret, { expiresIn: rememberMe ? '30d' : '7d' });
+  return jwt.sign({ id: user._id.toString(), rememberMe: Boolean(rememberMe), role: user.role }, env.jwtRefreshSecret, { expiresIn: rememberMe ? '30d' : '7d' });
 }
 
 export function hashToken(token) {

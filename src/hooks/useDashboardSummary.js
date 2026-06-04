@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { dashboardApi, getApiErrorMessage } from '../lib/api';
+import { useRealtimeEvent } from './useRealtimeEvent';
 
 export function useDashboardSummary() {
   const [state, setState] = useState({
@@ -34,6 +35,10 @@ export function useDashboardSummary() {
       active = false;
     };
   }, []);
+
+  useRealtimeEvent('dashboard:update', (dashboard) => {
+    setState({ dashboard, error: '', status: 'success' });
+  });
 
   return {
     dashboard: state.dashboard,

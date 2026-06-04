@@ -16,4 +16,8 @@ const skillSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+skillSchema.index({ user: 1, category: 1 });
+skillSchema.index({ user: 1, progress: -1 });
+skillSchema.index({ user: 1, updatedAt: -1 });
+
 export default mongoose.model('Skill', skillSchema);

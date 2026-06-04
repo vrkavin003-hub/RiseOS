@@ -5,6 +5,7 @@ import GlassCard from '../components/ui/GlassCard';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import PremiumButton from '../components/ui/PremiumButton';
 import SectionHeader from '../components/ui/SectionHeader';
+import StatusBanner from '../components/ui/StatusBanner';
 import { useJournalEntries } from '../hooks/useJournalEntries';
 
 const initialForm = {
@@ -151,11 +152,7 @@ export default function Journal() {
 
       <div className="grid gap-4 xl:grid-cols-[1.12fr_0.88fr]">
         <GlassCard className="p-5">
-          {error && (
-            <div className="mb-4 rounded-[8px] border border-ember/30 bg-ember/10 px-4 py-3 text-sm font-semibold text-ember" role="alert">
-              {error}
-            </div>
-          )}
+          <StatusBanner className="mb-4">{error}</StatusBanner>
           <form id="journal-entry-form" className="grid gap-4" onSubmit={handleSubmit}>
             <div className="grid gap-3 md:grid-cols-4">
               <label className="block">

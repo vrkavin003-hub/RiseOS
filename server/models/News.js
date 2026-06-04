@@ -17,4 +17,9 @@ const newsSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+newsSchema.index({ category: 1, publishedAt: -1 });
+newsSchema.index({ impactScore: -1, publishedAt: -1 });
+newsSchema.index({ publishedAt: -1, createdAt: -1 });
+newsSchema.index({ savedBy: 1, publishedAt: -1 });
+
 export default mongoose.model('News', newsSchema);
