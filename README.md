@@ -37,8 +37,8 @@ Required for production:
 - `PORT`
 - `CLIENT_URL`
 - `MONGO_URI`
-- `JWT_SECRET`
-- `JWT_REFRESH_SECRET`
+- `JWT_SECRET` with at least 32 random characters
+- `JWT_REFRESH_SECRET` with at least 32 random characters
 
 Optional integrations:
 
@@ -110,3 +110,5 @@ Set the secret environment variables in Render before deploying. Do not commit r
 - Optional integration keys listed above
 
 Leave `VITE_API_URL` unset for the same-origin Vercel deployment. The client will call `/api`. Do not set Vercel's `VITE_API_URL` to `localhost` or `127.0.0.1`; those addresses point to the visitor's machine, not the deployed API.
+
+After deployment, open `/api/health`. If `configuration.ok` is `false`, the JSON response lists the exact missing or weak environment variables.

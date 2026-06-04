@@ -1,5 +1,6 @@
 import app from '../server/app.js';
 import { connectDB } from '../server/config/db.js';
+import { env } from '../server/config/env.js';
 
 let connectionPromise = null;
 
@@ -20,7 +21,7 @@ function ensureDatabase() {
 
 export default async function handler(req, res) {
   try {
-    if (!shouldSkipDatabase(req)) {
+    if (!shouldSkipDatabase(req) && env.productionConfigIssues.length === 0) {
       await ensureDatabase();
     }
 

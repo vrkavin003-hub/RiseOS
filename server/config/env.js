@@ -12,20 +12,33 @@ const clientUrls = (process.env.CLIENT_URL || vercelClientUrl || defaultClientUr
 const jwtSecret = process.env.JWT_SECRET || 'dev-access-secret-change-me';
 const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'dev-refresh-secret-change-me';
 
-if (nodeEnv === 'production') {
-  const weakSecrets = [jwtSecret, jwtRefreshSecret].some((secret) => secret.includes('change-me') || secret.length < 32);
-  if (weakSecrets) {
-    throw new Error('Production JWT secrets must be set and at least 32 characters long.');
+function buildProductionConfigIssues() {
+  if (nodeEnv !== 'production') return [];
+
+  const issues = [];
+  const weakJwtSecret = jwtSecret.includes('change-me') || jwtSecret.length < 32;
+  const weakRefreshSecret = jwtRefreshSecret.includes('change-me') || jwtRefreshSecret.length < 32;
+
+  if (weakJwtSecret) {
+    issues.push('JWT_SECRET must be set to a random value with at least 32 characters.');
+  }
+
+  if (weakRefreshSecret) {
+    issues.push('JWT_REFRESH_SECRET must be set to a random value with at least 32 characters.');
   }
 
   if (!process.env.MONGO_URI) {
-    throw new Error('MONGO_URI is required in production.');
+    issues.push('MONGO_URI is required in production.');
   }
 
   if (clientUrls.length === 0) {
-    throw new Error('CLIENT_URL is required in production.');
+    issues.push('CLIENT_URL is required in production, or VERCEL_URL must be provided by Vercel.');
   }
+
+  return issues;
 }
+
+const productionConfigIssues = buildProductionConfigIssues();
 
 export const env = {
   clientUrl: clientUrls[0],
@@ -41,4 +54,5 @@ export const env = {
   nodeEnv,
   openAiApiKey: process.env.OPENAI_API_KEY || '',
   port: Number(process.env.PORT || 5000),
+  productionConfigIssues,
 };

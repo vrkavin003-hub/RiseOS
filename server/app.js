@@ -91,7 +91,26 @@ app.use(
 );
 
 app.get('/api/health', (req, res) => {
-  res.json({ name: 'RiseOS AI API', ok: true, time: new Date().toISOString() });
+  res.json({
+    configuration: {
+      issues: env.productionConfigIssues,
+      ok: env.productionConfigIssues.length === 0,
+    },
+    name: 'RiseOS AI API',
+    ok: env.productionConfigIssues.length === 0,
+    time: new Date().toISOString(),
+  });
+});
+
+app.use('/api', (req, res, next) => {
+  if (env.isProduction && env.productionConfigIssues.length > 0) {
+    return res.status(503).json({
+      issues: env.productionConfigIssues,
+      message: 'RiseOS API is deployed, but production environment variables are incomplete.',
+    });
+  }
+
+  return next();
 });
 
 app.use('/api', globalApiLimiter);
