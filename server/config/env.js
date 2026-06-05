@@ -50,6 +50,7 @@ const vercelClientUrls = [
 const clientUrls = Array.from(new Set([...configuredClientUrls, ...vercelClientUrls]));
 const jwtSecret = process.env.JWT_SECRET || 'dev-access-secret-change-me';
 const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'dev-refresh-secret-change-me';
+const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || process.env.DATABASE_URL || '';
 
 function buildProductionConfigIssues() {
   if (nodeEnv !== 'production') return [];
@@ -66,8 +67,8 @@ function buildProductionConfigIssues() {
     issues.push('JWT_REFRESH_SECRET must be set to a random value with at least 32 characters.');
   }
 
-  if (!process.env.MONGO_URI) {
-    issues.push('MONGO_URI is required in production.');
+  if (!mongoUri) {
+    issues.push('MONGO_URI, MONGODB_URI, or DATABASE_URL is required in production.');
   }
 
   if (clientUrls.length === 0) {
@@ -88,7 +89,7 @@ export const env = {
   isProduction: nodeEnv === 'production',
   jwtRefreshSecret,
   jwtSecret,
-  mongoUri: process.env.MONGO_URI || '',
+  mongoUri,
   newsApiKey: process.env.NEWS_API_KEY || '',
   nodeEnv,
   openAiApiKey: process.env.OPENAI_API_KEY || '',

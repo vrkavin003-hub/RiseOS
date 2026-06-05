@@ -36,7 +36,7 @@ Required for production:
 - `NODE_ENV=production`
 - `PORT`
 - `CLIENT_URL`
-- `MONGO_URI`
+- `MONGO_URI` or `MONGODB_URI` or `DATABASE_URL`
 - `JWT_SECRET` with at least 32 random characters
 - `JWT_REFRESH_SECRET` with at least 32 random characters
 
@@ -103,7 +103,7 @@ Set the secret environment variables in Render before deploying. Do not commit r
 
 `vercel.json` routes `/api/*` to the Express serverless entry at `api/index.js` and routes all other paths to the Vite SPA. Set these Vercel environment variables before deploying:
 
-- `MONGO_URI`
+- `MONGO_URI` or `MONGODB_URI` or `DATABASE_URL`
 - `JWT_SECRET`
 - `JWT_REFRESH_SECRET`
 - `CLIENT_URL` if you want to allow a custom domain in addition to the automatic Vercel URL
