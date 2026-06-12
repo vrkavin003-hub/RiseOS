@@ -29,6 +29,14 @@ Local defaults:
 - API: `http://127.0.0.1:5000/api`
 - Health: `http://127.0.0.1:5000/api/health`
 
+Create or reset the first admin login after `MONGO_URI` is configured:
+
+```bash
+npm run seed:admin
+```
+
+By default, the admin email is `admin@riseos.ai`. Set `SEED_PASSWORD` if you want a fixed password; otherwise the script generates and prints a strong password.
+
 ## Environment
 
 Required for production:
